@@ -1,5 +1,4 @@
 import time
-from xml.etree.ElementTree import tostring
 import serial
 
 class TFminiS:
