@@ -6,7 +6,7 @@ double mirror_velocity = 0.0;
 
 void handle_serial_requests(){
     if(Serial.available() > 0){
-        char c = Serial.read();
+        uint8_t c = Serial.read();
         if(c == SET_MIRROR_SPEED){
             byte buff[3];
             int ibuff = 0;
@@ -52,6 +52,9 @@ void handle_serial_requests(){
                 Serial.write(SUCCESS_COMMAND);
             }
             else Serial.write(ERROR_COMMAND_ALREADY_EFFECTIVE);
+        }
+        else if(c == WHOAMI){
+            Serial.write(ID);
         }
         else{
             Serial.write(ERROR_UNKNOWN_COMMAND);

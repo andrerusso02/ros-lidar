@@ -10,6 +10,9 @@
 #define ERROR_NO_VELOCITY 0x0A
 #define ERROR_TIMEOUT 0x0B
 
+#define WHOAMI 0xFF
+#define ID 0xFE
+
 extern double mirror_velocity; // velocity of the mirror
 
 void handle_serial_requests();
