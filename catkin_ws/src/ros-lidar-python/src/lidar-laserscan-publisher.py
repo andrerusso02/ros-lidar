@@ -1,5 +1,6 @@
-from curses import baudrate
+
 import serial
+import time
 
 REV_COMPLETED_FLAG = 0x01
 SET_MIRROR_SPEED = 0x02
@@ -30,8 +31,7 @@ class lidar:
         self.__serial.write(checksum)
 
         res = self.__serial.read(1)
-        print(res)
-        if res == SUCCESS_COMMAND:
+        if res == SUCCESS_COMMAND.to_bytes(1, 'big'):
             return integer + (decimal / 0x100)
         else:
             return -1
@@ -41,7 +41,6 @@ class lidar:
         self.__serial.timeout = 5.0 # seconds
         res = self.__serial.read(1)
         self.__serial.timeout = self.__default_read_timeout
-        self.__serial.close()
         return res
 
     def stop_motor(self):
@@ -51,5 +50,8 @@ class lidar:
 
 if __name__ == '__main__':
     lidar  = lidar('/dev/ttyUSB0', 115200)
-    # print(lidar.set_motor_speed(2.0))
+    time.sleep(2)
+    print(lidar.set_motor_speed(12.0))
     print(lidar.start_motor())
+    time.sleep(10)
+    print(lidar.stop_motor())
