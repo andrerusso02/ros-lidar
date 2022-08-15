@@ -1,0 +1,23 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/opt/ros/noetic/include/**",
+        "/home/arusso/ws-test/src/beginner_tutorials/include/**",
+        "/home/arusso/dev/ROS-differential-drive-robot/ws-dev-linux/src/ddbot_base/include/**",
+        "/home/arusso/dev/ros-lidar/catkin_ws/src/ros-lidar-python/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}
