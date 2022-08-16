@@ -1,10 +1,21 @@
 import time
 import serial
+import serial.tools.list_ports
 
 class TFminiS:
 
-    def __init__(self, port, baudrate):
-        self.__serial = serial.Serial(port, baudrate)
+    def __init__(self, port=None, connexion_mode='auto'):
+        self.__baudrate = 115200
+        self.__port = self.__find_port() if connexion_mode == 'auto' else port
+        self.__timeout = 1.0 # seconds
+        self.__serial = serial.Serial(self.__port, self.__baudrate, timeout=self.__timeout)
+
+    def __find_port(self):
+        peripherials = serial.tools.list_ports.comports(include_links=False)
+        for peripherial in peripherials:
+            if peripherial.description == "USB Serial":
+                return "/dev/" + peripherial.name
+        raise NoPortMatchingIdError
     
     def read_distance(self):
 
@@ -19,7 +30,8 @@ class TFminiS:
         
         ret = self.__serial.read(7)
 
-        #print([int(i) for i in ret])
+        if start_1 == b'' and start_2 == b'' and ret.count(b'') == 7:
+            raise NoResponseFromTFminiError
 
         checksum = 2 * 0x59
         for i in range(0, 6):
@@ -30,9 +42,15 @@ class TFminiS:
         else:
             return -1
 
+class NoPortMatchingIdError(Exception):
+    pass
+
+class NoResponseFromTFminiError(Exception):
+    pass
+
+
 if __name__ == '__main__':
-    tfmini = TFminiS('/dev/ttyUSB0', 115200)
-    time.sleep(2)
+    tfmini = TFminiS()
     cnt_success = 0
     cnt_fail = 0
     last = time.time()
@@ -46,4 +64,3 @@ if __name__ == '__main__':
         freq = 1.0/(now -last)
         print('success: {}, fail: {}, freq: {}'.format(cnt_success, cnt_fail, freq))
         last = time.time()
-        

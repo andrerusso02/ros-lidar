@@ -19,31 +19,35 @@ ID = 0xFE
 
 class Motor:
 
-    def __init__(self, baudrate, port='/dev/ttyUSB0', id=0xFE, connexion_mode='id'):
+    def __init__(self, port=None, connexion_mode='auto'):
         self.__default_read_timeout = 1.0 # seconds
-        self.__baudrate = baudrate
-        if connexion_mode == 'serial':
-            self.__serial = serial.Serial(port, baudrate, timeout=self.__default_read_timeout)
+        self.__baudrate = 115200
+        if connexion_mode == 'auto':
+            self.__port = self.find_port_and_connect()
+            
         else:
-            self.find_port_and_connect(id)
+            self.__port = port
+            self.__serial = serial.Serial(port, self.__baudrate, timeout=self.__default_read_timeout)
+            time.sleep(2) # wait for Arduino to reboot
     
-    def find_port_and_connect(self, id):
+    def find_port_and_connect(self):
         peripherials = serial.tools.list_ports.comports(include_links=False)
         for peripherial in peripherials:
             if peripherial.description == "USB2.0-Serial":
                 port = "/dev/" + peripherial.name
                 self.__serial = serial.Serial(port, self.__baudrate, timeout=self.__default_read_timeout)
-                time.sleep(2)
+                time.sleep(2) # wait for Arduino to reboot
                 self.__serial.write(WHOAMI.to_bytes(1, 'little'))
                 res = self.__serial.read(1)
-                if res == id.to_bytes(1, 'little'): # motor Arduino found !
-                    return
+                if res == ID.to_bytes(1, 'little'): # motor Arduino found !
+                    return port
                 else:
                     self.__serial.close()
         raise NoPortMatchingIdError
 
     """set the motor speed in rad/s"""
     def set_motor_speed(self, speed):
+
         integer  = int(speed)
         decimal = int((speed - integer)*0x100)
         checksum = (integer + decimal).to_bytes(1, 'little') # checksum -> less significant byte
@@ -72,3 +76,11 @@ class Motor:
 
 class NoPortMatchingIdError(Exception):
     pass
+
+if __name__ == '__main__':
+
+    motor  = Motor()
+    print(motor.set_motor_speed(12.0))
+    print(motor.start())
+    time.sleep(5)
+    print(motor.stop())
