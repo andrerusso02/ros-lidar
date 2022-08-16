@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "hardware.h"
 #include "serial_interface.h"
+#include <util/atomic.h>
 
 bool running = false;
 
@@ -41,7 +42,7 @@ void accelerateToSpeed(double mirror_speed) {
 
 int goToZero(){
 
-  unsigned long timeout =  millis() + (3.14159/mirror_velocity)*1000 + 200;
+  unsigned long timeout =  millis() + (3.14159/mirror_velocity)*1000 + 30;
 
   while(digitalRead(hall_sensor) == LOW){
     stepper.step(1);
@@ -56,16 +57,16 @@ int goToZero(){
     }
   }
   stepper.step(steps_offset_zero);
+  cnt_steps = steps_offset_zero;
   return 0;
 }
 
 void hall_sensor_isr() {
   cnt_steps = 0;
-  timeout_wait_isr = millis() + (3.14159/mirror_velocity)*1000 + 200;
+  timeout_wait_isr = millis() + (3.14159/mirror_velocity)*1000 + 30;
 }
 
 int start() {
-    running = true;
     pinMode(hall_sensor, INPUT_PULLUP);
     pinMode(coil1_enable, OUTPUT);
     pinMode(coil2_enable, OUTPUT);
@@ -74,6 +75,7 @@ int start() {
     accelerateToSpeed(mirror_velocity);
     int res  = goToZero();
     attachInterrupt(digitalPinToInterrupt(hall_sensor), hall_sensor_isr, RISING);
+    running = true;
     return res;
 }
 
@@ -96,11 +98,26 @@ void restart_if_timeout_reached() {
   }
 }
 
+void stop_if_timeout_reached() {
+  unsigned long t;
+  ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+  {
+    t = timeout_wait_isr;
+  }
+  if(millis()>t){
+    stop();
+    Serial.write(ERROR_MOTOR);
+  }
+}
+
 void stepper_spin() {
   if(running){
     stepper.step(1);
-    cnt_steps++;
-    restart_if_timeout_reached();
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+    {
+      cnt_steps++;
+    }
+    stop_if_timeout_reached();
     // send flag if new revolution starts
     if(cnt_steps == steps_offset_zero){
       Serial.write(REV_COMPLETED_FLAG);
