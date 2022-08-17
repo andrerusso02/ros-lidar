@@ -56,6 +56,7 @@ int goToZero(){
       return -1;
     }
   }
+
   stepper.step(steps_offset_zero);
   cnt_steps = steps_offset_zero;
   return 0;
@@ -74,7 +75,7 @@ int start() {
     startCoils();
     accelerateToSpeed(mirror_velocity);
     int res  = goToZero();
-    attachInterrupt(digitalPinToInterrupt(hall_sensor), hall_sensor_isr, RISING);
+    attachInterrupt(digitalPinToInterrupt(hall_sensor), hall_sensor_isr, FALLING); // low when in front of sensor
     running = true;
     return res;
 }
@@ -93,7 +94,7 @@ void restart_if_timeout_reached() {
     detachInterrupt(digitalPinToInterrupt(hall_sensor));
     accelerateToSpeed(mirror_velocity);
     goToZero();
-    attachInterrupt(digitalPinToInterrupt(hall_sensor), hall_sensor_isr, RISING);
+    attachInterrupt(digitalPinToInterrupt(hall_sensor), hall_sensor_isr, FALLING);
     running = true;
   }
 }
