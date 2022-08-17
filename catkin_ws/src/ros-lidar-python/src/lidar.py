@@ -13,7 +13,9 @@ class Lidar:
     def start(self, speed):
         print("Motor: set speed: " + str(self.__motor.set_motor_speed(speed)))
         print("Motor: start: " + str(self.__motor.start()))
-        self.__tfmini.clear_buffer()
+
+        self.__skip_revolution(2) # todo remove if possible
+        
         self.__thread_store_distance.start()
 
     def __thread_store_distance_function(self):
@@ -39,7 +41,17 @@ class Lidar:
         while self.__motor.wait_for_incoming_message() != Motor.Status.REVOLUTION_COMPLETED:
             self.__motor.start()
             pass
+        self.__skip_revolution(1) # todo remove if possible
         self.__distances = Queue()
+    
+    def __skip_revolution(self, nb_to_skip):
+        skip = 0
+        while skip < nb_to_skip:
+            while self.__motor.wait_for_incoming_message() != Motor.Status.REVOLUTION_COMPLETED:
+                pass
+            skip += 1
+        self.__tfmini.clear_buffer()
+        
 
 
 
