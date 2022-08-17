@@ -4,9 +4,9 @@ import serial.tools.list_ports
 
 class TFminiS:
 
-    def __init__(self, port=None, connexion_mode='auto'):
+    def __init__(self, port=None):
         self.__baudrate = 115200
-        self.__port = self.__find_port() if connexion_mode == 'auto' else port
+        self.__port = self.__find_port() if port is None else port
         self.__timeout = 1.0 # seconds
         self.__serial = serial.Serial(self.__port, self.__baudrate, timeout=self.__timeout)
 
@@ -16,6 +16,9 @@ class TFminiS:
             if peripherial.description == "USB Serial":
                 return "/dev/" + peripherial.name
         raise NoPortMatchingIdError
+    
+    def clear_buffer(self):
+        self.__serial.flushInput()
     
     def read_distance(self):
 

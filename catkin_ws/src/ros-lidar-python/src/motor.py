@@ -1,6 +1,7 @@
 import serial
 import serial.tools.list_ports
 import time
+from enum import Enum
 
 REV_COMPLETED_FLAG = 0x01
 SET_MIRROR_SPEED = 0x02
@@ -19,10 +20,16 @@ ID = 0xFE
 
 class Motor:
 
-    def __init__(self, port=None, connexion_mode='auto'):
+    class Status(Enum):
+        REVOLUTION_COMPLETED = 1
+        MOTOR_BLOCKED = 2
+        ERROR_READING_STATUS = 3
+
+
+    def __init__(self, port=None):
         self.__default_read_timeout = 1.0 # seconds
         self.__baudrate = 115200
-        if connexion_mode == 'auto':
+        if port is None:
             self.__port = self.find_port_and_connect()
             
         else:
@@ -64,7 +71,7 @@ class Motor:
 
     def start(self):
         self.__serial.write(START_COMMAND.to_bytes(1, 'big'))
-        self.__serial.timeout = 5.0 # seconds
+        self.__serial.timeout = 10.0 # seconds
         res = self.__serial.read(1)
         self.__serial.timeout = self.__default_read_timeout
         return res
@@ -72,6 +79,17 @@ class Motor:
     def stop(self):
         self.__serial.write(STOP_COMMAND.to_bytes(1, 'big'))
         return self.__serial.read(1)
+    
+    def wait_for_incoming_message(self):
+        self.__serial.timeout = None
+        ret = self.__serial.read(1)
+        if(ret == REV_COMPLETED_FLAG.to_bytes(1, 'big')):
+            return self.Status.REVOLUTION_COMPLETED
+        elif(ret == ERROR_MOTOR.to_bytes(1, 'big')):
+            return self.Status.MOTOR_BLOCKED
+        else:
+            return self.Status.ERROR_READING_STATUS
+        
 
 
 class NoPortMatchingIdError(Exception):
