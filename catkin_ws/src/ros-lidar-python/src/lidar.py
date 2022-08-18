@@ -8,6 +8,7 @@ class Lidar:
         self.__distance_mirror = 0.02 # todo find more accurate value
         self.__tfmini = TFminiS(port=port_tfmini)
         self.__motor = Motor(port=port_motor)
+        self.__stop_event = threading.Event()
         self.__distances = Queue()
         self.__thread_store_distance = threading.Thread(target=self.__thread_store_distance_function)
     
@@ -20,7 +21,7 @@ class Lidar:
         self.__thread_store_distance.start()
 
     def __thread_store_distance_function(self):
-        while True:
+        while not self.__stop_event.is_set():
             self.__distances.put(self.__tfmini.read_distance())
     
     def get_distances_set(self): # waitq for revolution completed
@@ -51,7 +52,21 @@ class Lidar:
             while self.__motor.wait_for_incoming_message() != Motor.Status.REVOLUTION_COMPLETED:
                 pass
             skip += 1
-        self.__tfmini.clear_buffer()
+        self.__tfmini.serial.flushInput()
+    
+    def stop(self):
+
+        self.__stop_event.set()
+        self.__thread_store_distance.join()
+
+        self.__motor.stop()
+
+        self.__motor.serial.cancel_read()
+
+        self.__tfmini.serial.close()
+        self.__motor.serial.close()
+
+        print("Threads stopped and serial ports closed properly") 
         
 
 

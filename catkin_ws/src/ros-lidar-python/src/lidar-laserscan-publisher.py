@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
+import re
 from lidar import Lidar
 import time
 from sensor_msgs.msg import LaserScan
 import rospy
+import serial
 
 def build_laserscan_msg(distances, duration):
     t = time.time()
@@ -32,13 +34,21 @@ if __name__ == '__main__':
 
     pub_laserscan = rospy.Publisher('lidar_laserscan', LaserScan, queue_size=10)
 
+    rospy.on_shutdown(lidar.stop)
+
     t_last = rospy.Time.now()
 
     while not rospy.is_shutdown():
-        distances = lidar.get_distances_set()
+        try:
+            distances = lidar.get_distances_set()
+        except serial.serialutil.SerialException:
+            if(rospy.is_shutdown()):
+                break
         t_now = rospy.Time.now()
         msg = build_laserscan_msg(distances, t_now - t_last)
         pub_laserscan.publish(msg)
         t_last = t_now
+        if(rospy.is_shutdown()):
+            print("shutdown")
 
 

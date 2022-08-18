@@ -34,7 +34,7 @@ class Motor:
             
         else:
             self.__port = port
-            self.__serial = serial.Serial(port, self.__baudrate, timeout=self.__default_read_timeout)
+            self.serial = serial.Serial(port, self.__baudrate, timeout=self.__default_read_timeout)
             time.sleep(2) # wait for Arduino to reboot
     
     def find_port_and_connect(self):
@@ -42,14 +42,14 @@ class Motor:
         for peripherial in peripherials:
             if peripherial.description == "USB2.0-Serial":
                 port = "/dev/" + peripherial.name
-                self.__serial = serial.Serial(port, self.__baudrate, timeout=self.__default_read_timeout)
+                self.serial = serial.Serial(port, self.__baudrate, timeout=self.__default_read_timeout)
                 time.sleep(2) # wait for Arduino to reboot
-                self.__serial.write(WHOAMI.to_bytes(1, 'little'))
-                res = self.__serial.read(1)
+                self.serial.write(WHOAMI.to_bytes(1, 'little'))
+                res = self.serial.read(1)
                 if res == ID.to_bytes(1, 'little'): # motor Arduino found !
                     return port
                 else:
-                    self.__serial.close()
+                    self.serial.close()
         raise Exception("Motor driver not found")
 
     """set the motor speed in rad/s"""
@@ -58,31 +58,31 @@ class Motor:
         integer  = int(speed)
         decimal = int((speed - integer)*0x100)
         checksum = (integer + decimal).to_bytes(1, 'little') # checksum -> less significant byte
-        self.__serial.write(SET_MIRROR_SPEED.to_bytes(1, 'big'))
-        self.__serial.write(integer.to_bytes(1, 'big'))
-        self.__serial.write(decimal.to_bytes(1, 'big'))
-        self.__serial.write(checksum)
+        self.serial.write(SET_MIRROR_SPEED.to_bytes(1, 'big'))
+        self.serial.write(integer.to_bytes(1, 'big'))
+        self.serial.write(decimal.to_bytes(1, 'big'))
+        self.serial.write(checksum)
 
-        res = self.__serial.read(1)
+        res = self.serial.read(1)
         if res == SUCCESS_COMMAND.to_bytes(1, 'big'):
             return integer + (decimal / 0x100)
         else:
             return -1
 
     def start(self):
-        self.__serial.write(START_COMMAND.to_bytes(1, 'big'))
-        self.__serial.timeout = 10.0 # seconds
-        res = self.__serial.read(1)
-        self.__serial.timeout = self.__default_read_timeout
+        self.serial.write(START_COMMAND.to_bytes(1, 'big'))
+        self.serial.timeout = 10.0 # seconds
+        res = self.serial.read(1)
+        self.serial.timeout = self.__default_read_timeout
         return res
 
     def stop(self):
-        self.__serial.write(STOP_COMMAND.to_bytes(1, 'big'))
-        return self.__serial.read(1)
+        self.serial.write(STOP_COMMAND.to_bytes(1, 'big'))
+        return self.serial.read(1)
     
     def wait_for_incoming_message(self):
-        self.__serial.timeout = None
-        ret = self.__serial.read(1)
+        self.serial.timeout = None
+        ret = self.serial.read(1)
         if(ret == REV_COMPLETED_FLAG.to_bytes(1, 'big')):
             return self.Status.REVOLUTION_COMPLETED
         elif(ret == ERROR_MOTOR.to_bytes(1, 'big')):
