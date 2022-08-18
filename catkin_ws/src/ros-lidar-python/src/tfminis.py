@@ -15,7 +15,7 @@ class TFminiS:
         for peripherial in peripherials:
             if peripherial.description == "USB Serial":
                 return "/dev/" + peripherial.name
-        raise NoPortMatchingIdError
+        raise Exception("TF-Mini-S not found")
     
     def clear_buffer(self):
         self.__serial.flushInput()
@@ -34,7 +34,7 @@ class TFminiS:
         ret = self.__serial.read(7)
 
         if start_1 == b'' and start_2 == b'' and ret.count(b'') == 7:
-            raise NoResponseFromTFminiError
+            raise Exception("No data received from TF-Mini-S")
 
         checksum = 2 * 0x59
         for i in range(0, 6):
@@ -44,12 +44,6 @@ class TFminiS:
             return int(ret[0]) + int(ret[1])*256 
         else:
             return -1
-
-class NoPortMatchingIdError(Exception):
-    pass
-
-class NoResponseFromTFminiError(Exception):
-    pass
 
 
 if __name__ == '__main__':

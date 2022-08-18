@@ -50,7 +50,7 @@ class Motor:
                     return port
                 else:
                     self.__serial.close()
-        raise NoPortMatchingIdError
+        raise Exception("Motor driver not found")
 
     """set the motor speed in rad/s"""
     def set_motor_speed(self, speed):
@@ -89,11 +89,7 @@ class Motor:
             return self.Status.MOTOR_BLOCKED
         else:
             return self.Status.ERROR_READING_STATUS
-        
 
-
-class NoPortMatchingIdError(Exception):
-    pass
 
 if __name__ == '__main__':
 
