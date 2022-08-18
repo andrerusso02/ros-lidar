@@ -5,6 +5,7 @@ from queue import Queue
 
 class Lidar:
     def __init__(self, port_tfmini=None, port_motor=None):
+        self.__distance_mirror = 0.02 # todo find more accurate value
         self.__tfmini = TFminiS(port=port_tfmini)
         self.__motor = Motor(port=port_motor)
         self.__distances = Queue()
@@ -28,7 +29,7 @@ class Lidar:
             distances  = []
             s = self.__distances.qsize()
             for i in range(0, s):
-                distances.append(self.__distances.get())
+                distances.append(self.__distances.get()/10.0-self.__distance_mirror)
                 self.__distances.task_done()
             return distances
         elif status == Motor.Status.MOTOR_BLOCKED:
