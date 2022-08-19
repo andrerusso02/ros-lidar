@@ -9,7 +9,7 @@
         "/opt/ros/noetic/include/**",
         "/home/arusso/ws-test/src/beginner_tutorials/include/**",
         "/home/arusso/dev/ROS-differential-drive-robot/ws-dev-linux/src/ddbot_base/include/**",
-        "/home/arusso/dev/ros-lidar/catkin_ws/src/ros-lidar-python/include/**",
+        "/home/arusso/dev/ros-lidar/catkin_ws/src/ros_lidar/include/**",
         "/usr/include/**"
       ],
       "name": "ROS",

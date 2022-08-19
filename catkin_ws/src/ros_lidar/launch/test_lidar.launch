@@ -1,0 +1,11 @@
+<launch>
+
+        <node pkg="ros_lidar" type="lidar_laserscan_publisher.py" name="lidar_laserscan_publisher" output="screen"/>
+
+        <node pkg="tf" type="static_transform_publisher" name="lidar_tf_broadcaster" args="0 0 0 0 0 0 1 lidar 10"/>
+
+        <node pkg="tf" type="static_transform_publisher" name="world_tf_broadcaster" args="0 0 0 0 0 0 1 world 10"/>
+
+        <node pkg="rviz" type="rviz" name="rviz" args="-d $(find ros_lidar)/rviz/test_lidar.rviz"/>    
+
+</launch>
