@@ -4,36 +4,41 @@
 
 double mirror_velocity = 0.0;
 
+int read_float(float *f) {
+    byte buff[5];
+    int ibuff = 0;
+    unsigned int timeout = 40;
+    unsigned long t_start = millis();
+    while(ibuff < 5){
+        if(Serial.available() > 0 || (millis() - t_start) > timeout){
+            buff[ibuff] = Serial.read();
+            ibuff++;
+        }
+    }
+    if(ibuff != 5){
+        return ERROR_TIMEOUT;
+    }
+    if(((buff[0] + buff[1] + buff[2] + buff[3]) & 0xFF)  != buff[4]){ // checksum : last byte of sum
+        return ERROR_CHECKSUM;
+    }
+    else
+    {
+        memcpy(f, buff, 4);
+        return SUCCESS_COMMAND;
+    }
+}
+
 void handle_serial_requests(){
     if(Serial.available() > 0){
         uint8_t c = Serial.read();
         if(c == SET_MIRROR_SPEED){
-            byte buff[3];
-            int ibuff = 0;
-            unsigned int timeout = 20;
-            unsigned long t_start = millis();
-            while(ibuff < 3){
-                if(Serial.available() > 0 || (millis() - t_start) > timeout){
-                    buff[ibuff] = Serial.read();
-                    ibuff++;
-                }
+            float f;
+            byte res = read_float(&f); // for test, send 0x2 0x0 0x0 0x80 0x3f 0xbf -> 1.0 rad/s
+            if(res == SUCCESS_COMMAND){
+                mirror_velocity = f;
+                
             }
-            if(ibuff != 3){
-                Serial.write(ERROR_TIMEOUT);
-                return;
-            }
-            byte VEL_H = buff[0];
-            byte VEL_L = buff[1];
-            byte checksum = buff[2];
-            if(((VEL_H + VEL_L) & 0xFF)  != checksum){
-                Serial.write(ERROR_CHECKSUM);
-            }
-            else{
-                mirror_velocity = VEL_H + (double)VEL_L/(double)0x100;
-                //set_mirror_speed(mirror_velocity);
-                Serial.write(SUCCESS_COMMAND);
-            }
-
+            Serial.write(res);
         }
         else if(c == START_COMMAND){
             if(!running && mirror_velocity != 0.0){
