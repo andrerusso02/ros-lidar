@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import re
+import sys
 from lidar import Lidar
 import time
 from sensor_msgs.msg import LaserScan
@@ -28,9 +28,17 @@ def build_laserscan_msg(scan, duration):
 
 if __name__ == '__main__':
 
+    # get speed from command line (rad/s)
+    if len(rospy.myargv()) != 2:
+        speed = 3.14159*3 # default
+    else:
+        speed = float(rospy.myargv()[1])
+
+
     lidar = Lidar()
-    lidar.start(3.14159*3)
-    print("started")
+    lidar.start(speed)
+
+    print("LiDAR started")
 
     rospy.init_node('lidar_laserscan_publisher', anonymous=True)
 

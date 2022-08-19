@@ -1,6 +1,8 @@
 <launch>
 
-        <node pkg="ros_lidar" type="lidar_laserscan_publisher.py" name="lidar_laserscan_publisher" output="screen"/>
+        <arg name="speed" default="12.566" /> <!-- 4 revolutions per second -->
+
+        <node pkg="ros_lidar" type="lidar_laserscan_publisher.py" name="lidar_laserscan_publisher" args="$(arg speed)" output="screen"/>
 
         <node pkg="tf" type="static_transform_publisher" name="lidar_tf_broadcaster" args="0 0 0 0 0 0 1 lidar 10"/>
 

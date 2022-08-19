@@ -13,8 +13,8 @@ class Lidar:
         self.__thread_store_measures = threading.Thread(target=self.__thread_store_measures_function)
     
     def start(self, speed):
-        print("Motor: set speed: " + str(self.__motor.set_motor_speed(speed)))
-        print("Motor: start: " + str(self.__motor.start()))
+        print("Motor speed: " + str(self.__motor.set_motor_speed(speed)) + " rad/s")
+        self.__motor.start()
 
         self.__skip_revolution(2) # todo remove if possible
         
