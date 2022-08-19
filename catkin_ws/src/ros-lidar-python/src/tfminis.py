@@ -4,6 +4,11 @@ import serial.tools.list_ports
 
 class TFminiS:
 
+    class Measure:
+        def __init__(self, distance, intensity):
+            self.distance = distance
+            self.intensity = intensity
+
     def __init__(self, port=None):
         self.__baudrate = 115200
         self.__port = self.__find_port() if port is None else port
@@ -17,7 +22,7 @@ class TFminiS:
                 return "/dev/" + peripherial.name
         raise Exception("TF-Mini-S not found")
     
-    def read_distance(self):
+    def read_measure(self):
 
         ret = bytes(7)
 
@@ -38,7 +43,9 @@ class TFminiS:
             checksum += int(ret[i])
         
         if ret[6] == checksum.to_bytes(2, 'little')[0]:
-            return int(ret[0]) + int(ret[1])*256 
+            dist = int(ret[0]) + int(ret[1])*256
+            intensity = int(ret[2]) + int(ret[3])*256
+            return self.Measure(dist, intensity)
         else:
             return -1
 
@@ -50,7 +57,7 @@ if __name__ == '__main__':
     last = time.time()
     while(True):
 
-        dist = tfmini.read_distance()
+        dist = tfmini.read_measure()
         
         if dist == -1:
             cnt_fail += 1

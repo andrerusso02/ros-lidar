@@ -9,8 +9,8 @@ class Lidar:
         self.__tfmini = TFminiS(port=port_tfmini)
         self.__motor = Motor(port=port_motor)
         self.__stop_event = threading.Event()
-        self.__distances = Queue()
-        self.__thread_store_distance = threading.Thread(target=self.__thread_store_distance_function)
+        self.__measures_queue = Queue()
+        self.__thread_store_measures = threading.Thread(target=self.__thread_store_measures_function)
     
     def start(self, speed):
         print("Motor: set speed: " + str(self.__motor.set_motor_speed(speed)))
@@ -18,25 +18,27 @@ class Lidar:
 
         self.__skip_revolution(2) # todo remove if possible
         
-        self.__thread_store_distance.start()
+        self.__thread_store_measures.start()
 
-    def __thread_store_distance_function(self):
+    def __thread_store_measures_function(self):
         while not self.__stop_event.is_set():
-            self.__distances.put(self.__tfmini.read_distance())
+            self.__measures_queue.put(self.__tfmini.read_measure())
     
-    def get_distances_set(self): # waitq for revolution completed
+    def get_measures_set(self): # waitq for revolution completed
         status = self.__motor.wait_for_incoming_message()
         if status == Motor.Status.REVOLUTION_COMPLETED:
             distances  = []
-            s = self.__distances.qsize()
+            s = self.__measures_queue.qsize()
             for i in range(0, s):
-                distances.append(self.__distances.get()/10.0-self.__distance_mirror)
-                self.__distances.task_done()
+                measure = self.__measures_queue.get()
+                measure.distance = measure.distance / 10.0 - self.__distance_mirror
+                distances.append(measure)
+                self.__measures_queue.task_done()
             return distances
         elif status == Motor.Status.MOTOR_BLOCKED:
             print("motor blocked")
             self.__restart()
-            return self.get_distances_set()
+            return self.get_measures_set()
 
     def __restart(self):
         self.__motor.start()
@@ -44,7 +46,7 @@ class Lidar:
             self.__motor.start()
             pass
         self.__skip_revolution(1) # todo remove if possible
-        self.__distances = Queue()
+        self.__measures_queue = Queue()
     
     def __skip_revolution(self, nb_to_skip):
         skip = 0
@@ -57,7 +59,7 @@ class Lidar:
     def stop(self):
 
         self.__stop_event.set()
-        self.__thread_store_distance.join()
+        self.__thread_store_measures.join()
 
         self.__motor.stop()
 
