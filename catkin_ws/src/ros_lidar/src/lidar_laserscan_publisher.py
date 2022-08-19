@@ -10,6 +10,7 @@ import serial
 # scan : distances and intensities for a complete revolution
 def build_laserscan_msg(scan, duration):
     t = time.time()
+    scan.reverse() # LaserScan wants measurements to be counter-clockwise
     msg = LaserScan()
     msg.header.stamp = rospy.Time.now()
     msg.header.frame_id = "lidar" #todo vérifier que c'est bien ça
