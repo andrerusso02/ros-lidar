@@ -2,8 +2,6 @@
 #include "serial_interface.h"
 #include "hardware.h"
 
-double mirror_velocity = 0.0;
-
 int read_float(float *f) {
     byte buff[5];
     int ibuff = 0;
@@ -33,10 +31,18 @@ void handle_serial_requests(){
         uint8_t c = Serial.read();
         if(c == SET_MIRROR_SPEED){
             float f;
-            byte res = read_float(&f); // for test, send 0x2 0x0 0x0 0x80 0x3f 0xbf -> 1.0 rad/s
+            byte res = read_float(&f); // for test, send 0x2 0x0 0x0 0x80 0x3f 0xbf = 1.0 rad/s
             if(res == SUCCESS_COMMAND){
                 mirror_velocity = f;
                 
+            }
+            Serial.write(res);
+        }
+        else if(c == SET_OFFSET_ZERO){
+            float f;
+            byte res = read_float(&f);
+            if(res == SUCCESS_COMMAND){
+                steps_offset_zero = (int) f/(3.14159*2) * steps_per_motor_revolution*gear_ratio;
             }
             Serial.write(res);
         }
