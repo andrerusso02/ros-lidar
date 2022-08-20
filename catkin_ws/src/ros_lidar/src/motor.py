@@ -2,6 +2,7 @@ import serial
 import serial.tools.list_ports
 import time
 from enum import Enum
+from numpy import float32
 
 REV_COMPLETED_FLAG = 0x01
 SET_MIRROR_SPEED = 0x02
@@ -14,6 +15,7 @@ ERROR_UNKNOWN_COMMAND = 0x08
 ERROR_COMMAND_ALREADY_EFFECTIVE = 0x09
 ERROR_NO_VELOCITY = 0x0A
 ERROR_TIMEOUT = 0x0B
+SET_OFFSET_ZERO = 0x0C
 
 WHOAMI = 0xFF
 ID = 0xFE
@@ -55,30 +57,34 @@ class Motor:
     """set the motor speed in rad/s"""
     def set_motor_speed(self, speed):
 
-        integer  = int(speed)
-        decimal = int((speed - integer)*0x100)
-        checksum = (integer + decimal).to_bytes(1, 'little') # checksum -> less significant byte
+        speed_bytes = float32(speed).tobytes()
+
+        checksum = sum(list(speed_bytes)).to_bytes(2, 'little')[0]
+
         self.serial.write(SET_MIRROR_SPEED.to_bytes(1, 'big'))
-        self.serial.write(integer.to_bytes(1, 'big'))
-        self.serial.write(decimal.to_bytes(1, 'big'))
-        self.serial.write(checksum)
+        for b in speed_bytes:
+            self.serial.write(b.to_bytes(1, 'little'))
+        self.serial.write(checksum.to_bytes(1, 'little'))
 
         res = self.serial.read(1)
-        if res == SUCCESS_COMMAND.to_bytes(1, 'big'):
-            return integer + (decimal / 0x100)
-        else:
-            return -1
+
+        if not res == SUCCESS_COMMAND.to_bytes(1, 'big'):
+            raise Exception("Error setting motor speed, error code: " + str(res))
 
     def start(self):
         self.serial.write(START_COMMAND.to_bytes(1, 'big'))
         self.serial.timeout = 10.0 # seconds
         res = self.serial.read(1)
+        if res != SUCCESS_COMMAND.to_bytes(1, 'big'):
+            raise Exception("Error starting motor, error code: " + str(res))
         self.serial.timeout = self.__default_read_timeout
-        return res
+        
 
     def stop(self):
         self.serial.write(STOP_COMMAND.to_bytes(1, 'big'))
-        return self.serial.read(1)
+        res =  self.serial.read(1)
+        if res != SUCCESS_COMMAND.to_bytes(1, 'big'):
+            raise Exception("Error stopping motor, error code: " + str(res))
     
     def wait_for_incoming_message(self):
         self.serial.timeout = None
@@ -89,12 +95,3 @@ class Motor:
             return self.Status.MOTOR_BLOCKED
         else:
             return self.Status.ERROR_READING_STATUS
-
-
-if __name__ == '__main__':
-
-    motor  = Motor()
-    print(motor.set_motor_speed(12.0))
-    print(motor.start())
-    time.sleep(5)
-    print(motor.stop())

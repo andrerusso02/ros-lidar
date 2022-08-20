@@ -2,6 +2,7 @@ from tfminis import TFminiS
 from motor import Motor
 import threading
 from queue import Queue
+import time
 
 class Lidar:
     def __init__(self, port_tfmini=None, port_motor=None):
@@ -13,11 +14,9 @@ class Lidar:
         self.__thread_store_measures = threading.Thread(target=self.__thread_store_measures_function)
     
     def start(self, speed):
-        print("Motor speed: " + str(self.__motor.set_motor_speed(speed)) + " rad/s")
+        self.__motor.set_motor_speed(speed)
         self.__motor.start()
-
         self.__skip_revolution(2) # todo remove if possible
-        
         self.__thread_store_measures.start()
 
     def __thread_store_measures_function(self):
