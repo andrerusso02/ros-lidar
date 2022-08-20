@@ -6,6 +6,7 @@ import time
 from sensor_msgs.msg import LaserScan
 import rospy
 import serial
+from rosgraph import is_master_online
 
 # scan : distances and intensities for a complete revolution
 def build_laserscan_msg(scan, duration):
@@ -27,6 +28,9 @@ def build_laserscan_msg(scan, duration):
 
 
 if __name__ == '__main__':
+
+    if not is_master_online():
+        raise Exception("ROS master not found")
 
     # get speed from command line (rad/s)
     if len(rospy.myargv()) != 3:
