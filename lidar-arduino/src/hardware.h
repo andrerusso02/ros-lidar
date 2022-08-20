@@ -14,6 +14,10 @@
 // small gear = 18 teeths
 
 extern bool running;
+extern int steps_per_motor_revolution;
+extern double gear_ratio;
+extern int steps_offset_zero;
+extern double mirror_velocity;
 
 int start();
 void stop();

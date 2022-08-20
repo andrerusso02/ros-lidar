@@ -9,10 +9,9 @@
 #define ERROR_COMMAND_ALREADY_EFFECTIVE 0x09
 #define ERROR_NO_VELOCITY 0x0A
 #define ERROR_TIMEOUT 0x0B
+#define SET_OFFSET_ZERO 0x0C
 
 #define WHOAMI 0xFF
 #define ID 0xFE
-
-extern double mirror_velocity; // velocity of the mirror
 
 void handle_serial_requests();

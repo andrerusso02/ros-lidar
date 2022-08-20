@@ -8,11 +8,14 @@ bool running = false;
 volatile int cnt_steps = 0; // nb steps since sensor irq
 volatile unsigned long timeout_wait_isr = 0; // time after which we consider the motor is blocked
 
-int steps_per_revolution = 96;
-int max_revs_per_minute = 60;
+int steps_per_motor_revolution = 96;
 double gear_ratio = 112.0 / 18.0;
-int steps_offset_zero = 160;
-Stepper stepper(steps_per_revolution, coil_1_A, coil_1_B, coil_2_A, coil_2_B);
+int steps_offset_zero = 160; // default
+double mirror_velocity = 0.0;
+
+int max_revs_per_minute = 60;
+
+Stepper stepper(steps_per_motor_revolution, coil_1_A, coil_1_B, coil_2_A, coil_2_B);
 
 
 void set_mirror_speed(double vel_mirror) {
