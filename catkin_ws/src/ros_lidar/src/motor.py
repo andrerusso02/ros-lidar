@@ -56,20 +56,24 @@ class Motor:
 
     """set the motor speed in rad/s"""
     def set_motor_speed(self, speed):
+        self.__send_command_float32(SET_MIRROR_SPEED, speed)
+    
+    """set the motor zero position in rad"""
+    def set_motor_zero(self, zero_pos):
+        self.__send_command_float32(SET_OFFSET_ZERO, zero_pos)
+    
+    def __send_command_float32(self, adress, value):
+        value_bytes = float32(value).tobytes()
+        checksum = sum(list(value_bytes)).to_bytes(2, 'little')[0]
 
-        speed_bytes = float32(speed).tobytes()
-
-        checksum = sum(list(speed_bytes)).to_bytes(2, 'little')[0]
-
-        self.serial.write(SET_MIRROR_SPEED.to_bytes(1, 'big'))
-        for b in speed_bytes:
+        self.serial.write(adress.to_bytes(1, 'big'))
+        for b in value_bytes:
             self.serial.write(b.to_bytes(1, 'little'))
         self.serial.write(checksum.to_bytes(1, 'little'))
 
         res = self.serial.read(1)
-
         if not res == SUCCESS_COMMAND.to_bytes(1, 'big'):
-            raise Exception("Error setting motor speed, error code: " + str(res))
+            raise Exception("Error sending command, error code: " + str(res))
 
     def start(self):
         self.serial.write(START_COMMAND.to_bytes(1, 'big'))

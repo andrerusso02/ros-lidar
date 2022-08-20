@@ -29,14 +29,16 @@ def build_laserscan_msg(scan, duration):
 if __name__ == '__main__':
 
     # get speed from command line (rad/s)
-    if len(rospy.myargv()) != 2:
+    if len(rospy.myargv()) != 3:
         speed = 3.14159*3 # default
+        zero_pos = 1.68
     else:
         speed = float(rospy.myargv()[1])
+        zero_pos = float(rospy.myargv()[1])
 
 
     lidar = Lidar()
-    lidar.start(speed)
+    lidar.start(speed, zero_pos)
 
     print("LiDAR started")
 
