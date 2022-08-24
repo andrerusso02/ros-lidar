@@ -1,7 +1,7 @@
 #include <Stepper.h>
 
-#define coil_1_A 8
-#define coil_1_B 9
+#define coil_1_A 9
+#define coil_1_B 8
 #define coil_2_A 10
 #define coil_2_B 11
 
