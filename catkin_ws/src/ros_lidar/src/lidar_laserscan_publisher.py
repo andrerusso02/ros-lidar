@@ -39,9 +39,15 @@ if __name__ == '__main__':
     else:
         speed = float(rospy.myargv()[1])
         zero_pos = float(rospy.myargv()[1])
+    
+    # get lidar sensor port from parameter server
+    port_lidar_sensor = rospy.get_param('~port_lidar_sensor', None)
+    # get motor port from parameter server
+    port_motor = rospy.get_param('~port_motor', None)
 
 
-    lidar = Lidar()
+
+    lidar = Lidar(port_lidar_sensor, port_motor)
     lidar.start(speed, zero_pos)
 
     print("LiDAR started")
