@@ -99,3 +99,20 @@ class Motor:
             return self.Status.MOTOR_BLOCKED
         else:
             return self.Status.ERROR_READING_STATUS
+
+
+# main test
+if __name__ == "__main__":
+
+    value = 1.3
+    adress = SET_OFFSET_ZERO
+    
+    value_bytes = float32(value).tobytes()
+    checksum = sum(list(value_bytes)).to_bytes(2, 'little')[0]
+
+    print(adress.to_bytes(1, 'big').hex(), end=" ")
+
+    for b in value_bytes:
+        print(b.to_bytes(1, 'little').hex(), end=" ")
+    print(checksum.to_bytes(1, 'little').hex(), end=" ")
+

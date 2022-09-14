@@ -24,7 +24,7 @@ class Lidar:
         while not self.__stop_event.is_set():
             self.__measures_queue.put(self.__tfmini.read_measure())
     
-    def get_measures_set(self): # waitq for revolution completed
+    def get_measures_set(self): # wait for revolution completed
         status = self.__motor.wait_for_incoming_message()
         if status == Motor.Status.REVOLUTION_COMPLETED:
             measures  = []

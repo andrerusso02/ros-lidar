@@ -31,7 +31,7 @@ void handle_serial_requests(){
         uint8_t c = Serial.read();
         if(c == SET_MIRROR_SPEED){
             float f;
-            byte res = read_float(&f); // for test, send 0x2 0x0 0x0 0x80 0x3f 0xbf = 1.0 rad/s
+            byte res = read_float(&f); // for test, send 02 66 66 a6 3f b1 = 1.3 rad/s
             if(res == SUCCESS_COMMAND){
                 mirror_velocity = f;
                 
@@ -42,7 +42,7 @@ void handle_serial_requests(){
             float f;
             byte res = read_float(&f);
             if(res == SUCCESS_COMMAND){
-                steps_offset_zero = (int) f/(3.14159*2) * steps_per_motor_revolution*gear_ratio;
+                steps_offset_zero = (int) (f/(3.14159*2) * steps_per_motor_revolution*gear_ratio);
             }
             Serial.write(res);
         }
