@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 
-from lidar import Lidar
 import time
-from sensor_msgs.msg import LaserScan
+import os
+import sys
 import rospy
 import serial
 from rosgraph import is_master_online
+from sensor_msgs.msg import LaserScan
+from pathlib import Path
+from lidar import Lidar
 
 # scan : distances and intensities for a complete revolution
 def build_laserscan_msg(scan, duration, frame_id):
@@ -28,6 +31,12 @@ def build_laserscan_msg(scan, duration, frame_id):
 
 if __name__ == '__main__':
 
+    # redirect errors to log file
+    log_filename = os.environ.get('HOME') + '/.ros/log/errors_lidar_laserscan_publisher.log'
+    path_log_filename = Path(log_filename)
+    path_log_filename.touch(exist_ok=True)
+    sys.stderr = open(path_log_filename, "w")
+
     if not is_master_online():
         raise Exception("ROS master not found")
 
@@ -40,6 +49,7 @@ if __name__ == '__main__':
     rospy.init_node('lidar_laserscan_publisher', anonymous=True)
 
     rospy.loginfo("LidarLaserscanPublisher node started with namespace %s", namespace)
+    rospy.loginfo("Errors will be logged in " + log_filename)
 
     # get params from parameter server
     try:
@@ -57,7 +67,7 @@ if __name__ == '__main__':
 
     except Exception as e:
         rospy.logerr("Parameters not found, aborting..." + str(e))
-        time.sleep(1.0) # wait for log to be published
+        #time.sleep(1.0) # wait for log to be published
         rospy.signal_shutdown("Parameters not found")
         exit()
 
