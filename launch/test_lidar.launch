@@ -1,15 +1,14 @@
 <launch>
+        <param name="/lidar/zero_position" type="double" value="1.68"/>
+        <param name="/lidar/speed" type="double" value="12.555"/>
+        <param name="/lidar/frame_id" type="str" value="base_lidar"/>
+        <param name="/lidar/find_ports_auto" type="bool" value="true"/>
 
-        <!--Doesn't work since some args have been moved to ros parameters, todo-->
+        <node pkg="ros_lidar" type="lidar_laserscan_publisher.py" name="lidar_laserscan_publisher" args="lidar" required="true" output="screen"/>
 
-        <arg name="speed" default="12.566" /> <!-- 4 revolutions per second -->
-
-        <node pkg="ros_lidar" type="lidar_laserscan_publisher.py" name="lidar_laserscan_publisher" args="/"/>
-
-        <node pkg="tf" type="static_transform_publisher" name="lidar_tf_broadcaster" args="0 0 0 0 0 0 1 lidar 10"/>
+        <node pkg="tf" type="static_transform_publisher" name="lidar_tf_broadcaster" args="0 0 0 0 0 0 1 base_lidar 10"/>
 
         <node pkg="tf" type="static_transform_publisher" name="world_tf_broadcaster" args="0 0 0 0 0 0 1 world 10"/>
 
-        <node pkg="rviz" type="rviz" name="rviz" args="-d $(find ros_lidar)/rviz/test_lidar.rviz"/>    
-
+        <node pkg="rviz" type="rviz" name="rviz" args="-d $(find ros_lidar)/rviz/test_lidar.rviz" required="true"/>    
 </launch>
