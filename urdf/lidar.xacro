@@ -6,29 +6,35 @@
 
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="lidar">
 
- 
+    <material name="black">
+        <color rgba="0.2 0.2 0.2 1.0"/>
+    </material>
+
     <link name="laser_frame">
         <visual>
             <geometry>
-                <cylinder radius="0.05" length="0.04"/>
+                <mesh filename="package://ros_lidar/3D_parts/stl/simple_lidar_shape.stl" scale="0.001 0.001 0.001"/>
             </geometry>
-            <material name="red"/>
+            <origin xyz="0 -0.00915 -0.042" rpy="3.14159 0 0"/>
+            <material name="black"/>
         </visual>
         <collision>
             <geometry>
-                <cylinder radius="0.05" length="0.04"/>
+                <mesh filename="package://ros_lidar/3D_parts/stl/simple_lidar_shape.stl" scale="0.001 0.001 0.001"/>
             </geometry>
+            <origin xyz="0 -0.00915 -0.042" rpy="3.14159 0 0"/>
         </collision>
         <inertial>
             <mass value="0.075"/>
             <inertia ixx="0.0000137" ixy="0.0" ixz="0.0" iyy="0.0000137" iyz="0.0" izz="0.00002419"/> <!-- cylinder r=2.54cm h=3cm -->
         </inertial>
+        <origin xyz="0 -0.00915 -0.042" rpy="3.14159 0 0"/>
     </link>
  
  
  
     <gazebo reference="laser_frame">
-        <material>Gazebo/Red</material>
+        <material>Gazebo/DarkGrey</material>
  
         <sensor name="laser" type="ray">
             <pose> 0 0 0 0 0 0 </pose>

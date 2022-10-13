@@ -1,0 +1,13 @@
+<launch>
+
+    <param name="robot_description" command="xacro '$(find ros_lidar)/urdf/lidar.xacro'" />
+
+    <node pkg="tf2_ros" type="static_transform_publisher" name="lidar_tf_broadcaster" args="0 0 0 0 0 0 1 map laser_frame" />
+
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"/>
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+
+    <env name="LIBGL_ALWAYS_SOFTWARE" value="true" /> <!-- needed for rviz to display meshes (disables GPU acceleration) -->
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find ros_lidar)/rviz/test_lidar.rviz" required="true"/>  
+
+</launch>
