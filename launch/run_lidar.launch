@@ -1,13 +1,33 @@
 <launch>
 
-    <param name="robot_description" command="xacro '$(find ros_lidar)/urdf/lidar.xacro'" />
+    <arg name="sim" default="false"/>
+    <arg name="no_remote" default="false"/>
 
-    <node pkg="tf2_ros" type="static_transform_publisher" name="lidar_tf_broadcaster" args="0 0 0 0 0 0 1 map laser_frame" />
+    <group unless="$(arg sim)">
+        <param name="/lidar/zero_position" type="double" value="3.5"/>
+        <param name="/lidar/speed" type="double" value="9.0"/>
+        <param name="/lidar/frame_id" type="str" value="laserscanner_frame"/>
 
-    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"/>
-    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+        <group if="$(arg no_remote)">
+            <node pkg="ros_lidar" type="lidar_laserscan_publisher.py" name="lidar_laserscan_publisher" args="lidar" required="true">
+                <remap from="/lidar/port_lidar_sensor" to="/peripherials_ports/lidar_sensor" />
+                <remap from="/lidar/port_motor" to="/peripherials_ports/arduino_lidar" />
+            </node>
+        </group>
 
-    <env name="LIBGL_ALWAYS_SOFTWARE" value="true" /> <!-- needed for rviz to display meshes (disables GPU acceleration) -->
-    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find ros_lidar)/rviz/test_lidar.rviz" required="true"/>  
+        <group unless="$(arg no_remote)">
+            <machine
+                name="robot"
+                address="ddbot"
+                user="ubuntu"
+                env-loader="/home/ubuntu/setup_ros.bash"
+                default="never"
+            />
+            <node pkg="ros_lidar" type="lidar_laserscan_publisher.py" name="lidar_laserscan_publisher" args="lidar" required="true" machine="robot">
+                <remap from="/lidar/port_lidar_sensor" to="/peripherials_ports/lidar_sensor" />
+                <remap from="/lidar/port_motor" to="/peripherials_ports/arduino_lidar" />
+            </node>
+        </group>
+    </group>
 
 </launch>
